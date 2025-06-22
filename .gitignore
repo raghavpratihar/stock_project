@@ -1,2 +1,22 @@
-/.xlsx
-/.csv
+# Ignore Python bytecode
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environment
+venv/
+.env/
+
+# Ignore system files
+.DS_Store
+
+# Ignore logs
+*.log
+
+
+# Ignore all Excel files
+*.xls
+*.xlsx
+*.xlsm
+
+# Ignore all CSV files
+*.csv
