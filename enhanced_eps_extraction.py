@@ -108,8 +108,6 @@ def process_url_batch(urls, timeout=30):
         try:
             eps_value = extract_eps_from_url(url)
             eps_values.append(eps_value)
-            # Add small delay between requests to avoid overwhelming the server
-            time.sleep(0.1)
         except Exception as e:
             logger.error(f"Error processing URL {i+1}/{len(urls)} in batch: {url[:100]}... - {e}")
             eps_values.append(None)
@@ -117,7 +115,7 @@ def process_url_batch(urls, timeout=30):
             continue
     return eps_values
 
-def extract_eps_with_requests_html_chunked(grouped_df, chunk_size=50, max_workers=3, chunk_timeout=60):
+def extract_eps_with_requests_html_chunked(grouped_df, chunk_size=50, max_workers=3, chunk_timeout=60, save_path='grouped_df_eps_partial.xlsx'):
     """
     Extract EPS data using requests_html with chunked processing to avoid getting stuck
     
@@ -126,6 +124,7 @@ def extract_eps_with_requests_html_chunked(grouped_df, chunk_size=50, max_worker
         chunk_size: Number of batches to process at once (default: 50)
         max_workers: Maximum number of worker threads (default: 3, reduced further)
         chunk_timeout: Timeout for entire chunk processing in seconds (default: 60)
+        save_path: Path to save the DataFrame after each chunk (default: 'grouped_df_eps_partial.xlsx')
         
     Returns:
         DataFrame with added 'eps' column
@@ -201,6 +200,12 @@ def extract_eps_with_requests_html_chunked(grouped_df, chunk_size=50, max_worker
             for idx in chunk_indices:
                 if grouped_df.at[idx, 'eps'] == '':
                     grouped_df.at[idx, 'eps'] = []
+        # Save after each chunk
+        try:
+            grouped_df.to_excel(save_path, index=False)
+            logger.info(f"Saved progress to {save_path} after chunk {chunk_start//chunk_size + 1}")
+        except Exception as e:
+            logger.error(f"Failed to save progress to {save_path} after chunk {chunk_start//chunk_size + 1}: {e}")
     
     # Clean up thread-local sessions
     if hasattr(thread_local, "session"):
